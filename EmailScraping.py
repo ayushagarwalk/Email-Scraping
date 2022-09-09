@@ -60,8 +60,6 @@ def emailsLeechFunc(url, i):
         else:
             pass
 
-        # TODO: Open a file for reading urls
-
 # Find and Parse Sitemaps to Create List of all website's pages
 from usp.tree import sitemap_tree_for_homepage
 
@@ -79,17 +77,11 @@ def getPagesFromSitemap(fullDomain):
 # Go through List Pages Raw output a list of unique pages links
 def getListUniquePages(listPagesRaw):
     listPages = []
-
     for page in listPagesRaw:
-
         if page in listPages:
-
             pass
-
         else:
-
             listPages.append(page)
-
     return listPages
 
 def runEmailSearch(listOfUrls):
@@ -107,8 +99,7 @@ def runSearch(url):
     finishedlist = getListUniquePages(list)
     finishedlist.append(url)
     runEmailSearch(finishedlist)
-    print(allemails)
 
 
 
-runSearch("https://www.attitudetech.ie")
+runSearch("https://www.example.com")
