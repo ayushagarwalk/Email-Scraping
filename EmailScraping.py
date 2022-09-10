@@ -1,8 +1,9 @@
 #! python3
 import re, urllib.request, time
+from bs4 import BeautifulSoup
 from usp.tree import sitemap_tree_for_homepage
 
-emailRegex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # regex for validating an email format
+emailRegex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+', re.VERBOSE) # regex for validating an email format
 """emailRegex = re.compile(r'''
 #example :
 #something-.+_@somedomain.com
@@ -15,20 +16,38 @@ emailRegex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|
 ''', re.VERBOSE)"""
 allemails = []
 
+
 # Extacting Emails
 def extractEmailsFromUrlText(urlText):
+    soup = BeautifulSoup(urlText, 'html.parser')
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()  # rip it out
+    # get text
+    text = soup.get_text()
+    # break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # drop blank lines
+    text = '\n'.join(chunk for chunk in chunks if chunk)
+    text = text.replace('\n', ' ')  # creates a single block of text
+    words = text.split()  # splits the entire text into seperate words
+    isValid(words)
+
+
+def isValid(wordlist):
     emailFile = open("emails.txt", 'a')
-    extractedEmail = emailRegex.findall(urlText)
-    seen = set(allemails)
-    for email in extractedEmail:
-        if email not in seen:  # faster than `word not in output`
+    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # regex for validating an email format
+    for email in wordlist:
+        seen = set(allemails)
+        if email not in seen and re.fullmatch(regex, email): # faster than `word not in output`
+            allemails.append(email)
             seen.add(email)
-            emailFile.write(email + "\n")  # appending Emails to a filerea
-            allemails.append(email[0])
+            emailFile.write(email + "\n")  # appending Emails to a fileread
     lenh = len(allemails)
     print("\tNumber of Emails : %s\n" % lenh)
     emailFile.close()
-
 
 # HtmlPage Read Func
 def htmlPageRead(url, i):
@@ -41,7 +60,6 @@ def htmlPageRead(url, i):
         urlText = urlHtmlPageRead.decode()
         print("%s.%s\tFetched in : %s" % (i, url, (time.time() - start)))
         extractEmailsFromUrlText(urlText)
-        print(urlText)
     except:
         pass
 
@@ -60,10 +78,8 @@ def emailsLeechFunc(url, i):
         else:
             pass
 
+
 # Find and Parse Sitemaps to Create List of all website's pages
-from usp.tree import sitemap_tree_for_homepage
-
-
 def getPagesFromSitemap(fullDomain):
     listPagesRaw = []
 
@@ -87,7 +103,7 @@ def getListUniquePages(listPagesRaw):
 def runEmailSearch(listOfUrls):
     start = time.time()
     i = 0
-    # Iterate Opened file for getting single url
+    # Iterate list for getting single url
     for urlLink in listOfUrls:
         urlLink = urlLink.strip('\'"')
         i = i + 1
@@ -95,11 +111,12 @@ def runEmailSearch(listOfUrls):
     print("Elapsed Time: %s" % (time.time() - start))
 
 def runSearch(url):
-    list = getPagesFromSitemap(url)
-    finishedlist = getListUniquePages(list)
-    finishedlist.append(url)
+    basiclist = getPagesFromSitemap(url)
+    finishedlist = getListUniquePages(basiclist)
+    finishedlist.append(url) # add homepage to list to be parsed
     runEmailSearch(finishedlist)
 
 
 
-runSearch("https://www.example.com")
+
+runSearch("https://www.attitudetech.ie")
