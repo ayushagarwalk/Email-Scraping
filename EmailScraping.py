@@ -119,4 +119,4 @@ def runSearch(url):
 
 
 
-runSearch("https://www.attitudetech.ie")
+runSearch("") # enter the website you want to search here - ensutre full url "https://www.example.com"
