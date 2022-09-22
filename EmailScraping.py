@@ -77,6 +77,8 @@ def emailsLeechFunc(url, i):
                 pass
         else:
             pass
+    except:
+        pass
 
 
 # Find and Parse Sitemaps to Create List of all website's pages
@@ -109,6 +111,7 @@ def runEmailSearch(listOfUrls):
         i = i + 1
         emailsLeechFunc(urlLink, i)
     print("Elapsed Time: %s" % (time.time() - start))
+    time.sleep(5)
 
 def runSearch(url):
     basiclist = getPagesFromSitemap(url)
@@ -119,4 +122,4 @@ def runSearch(url):
 
 
 
-runSearch("") # enter the website you want to search here - ensutre full url "https://www.example.com"
+#runSearch("") # enter the website you want to search here - ensutre full url "https://www.example.com"
