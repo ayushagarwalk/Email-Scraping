@@ -47,16 +47,18 @@ def search(term, num_results=10, lang="en", proxy=None):
 
     # Fetch
     start = 0
-    while start < num_results:
+    resp = _req(escaped_term, num_results - start, lang, start, proxies)
+    extract_emails_from_url_text(resp)
+    #while start < num_results:
         # Send request
-        resp = _req(escaped_term, num_results - start, lang, start, proxies)
-        extract_emails_from_url_text(resp)
 
-        '''# Parse
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        result_block = soup.find_all('div', attrs={'class': 'g'})
-        for result in result_block:
-            # Find link, title, description
+
+        # Parse
+        #soup = BeautifulSoup(resp.text, 'html.parser')
+        #result_block = soup.find_all('div', attrs={'class': 'g'})
+        #for result in result_block:
+
+'''# Find link, title, description
             link = result.find('a', href=True)
             title = result.find('h3')
             description_box = result.find('div', {'style': '-webkit-line-clamp:2'})
@@ -70,8 +72,8 @@ def search(term, num_results=10, lang="en", proxy=None):
                         yield link['href']'''
 
 
-def extract_emails_from_url_text(url_text):
-    soup = BeautifulSoup(url_text, 'html.parser')
+def extract_emails_from_url_text(resp):
+    soup = BeautifulSoup(resp.text, 'html.parser')
     # kill all script and style elements
     for script in soup(["script", "style"]):
         script.extract()  # rip it out
@@ -85,6 +87,7 @@ def extract_emails_from_url_text(url_text):
     text = '\n'.join(chunk for chunk in chunks if chunk)
     text = text.replace('\n', ' ')  # creates a single block of text
     words = text.split()  # splits the entire text into seperate words
+    print(words)
     is_valid(words)
 
 
@@ -101,3 +104,6 @@ def is_valid(wordlist):
     lenh = len(allemails)
     print("\tNumber of Emails : %s\n" % lenh)
     email_file.close()
+
+
+search('*"@gmail.com"')
