@@ -1,3 +1,5 @@
+import time
+
 from bs4 import BeautifulSoup
 from requests import get
 import re
@@ -34,7 +36,7 @@ class SearchResult:
         return f"SearchResult(url={self.url}, title={self.title}, description={self.description})"
 
 
-def search(term, num_results=10, lang="en", proxy=None):
+def search(term, num_results=1000000000000, lang="en", proxy=None):
     escaped_term = term.replace(' ', '+')
 
     # Proxy
@@ -47,9 +49,12 @@ def search(term, num_results=10, lang="en", proxy=None):
 
     # Fetch
     start = 0
-    resp = _req(escaped_term, num_results - start, lang, start, proxies)
-    extract_emails_from_url_text(resp)
-    #while start < num_results:
+
+    while True:
+        resp = _req(escaped_term, num_results - start, lang, start, proxies)
+        extract_emails_from_url_text(resp)
+        time.sleep(10)
+        start += 1
         # Send request
 
 
@@ -79,25 +84,18 @@ def extract_emails_from_url_text(resp):
         script.extract()  # rip it out
     # get text
     text = soup.get_text()
-    # break into lines and remove leading and trailing space on each
-    lines = (line.strip() for line in text.splitlines())
-    # break multi-headlines into a line each
-    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # drop blank lines
-    text = '\n'.join(chunk for chunk in chunks if chunk)
-    text = text.replace('\n', ' ')  # creates a single block of text
-    words = text.split()  # splits the entire text into seperate words
-    print(words)
-    is_valid(words)
+    print(text)
+    is_valid(text)
 
 
 def is_valid(wordlist):
     email_file = open("emails.txt", 'a')
-    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+    #regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+    emails = regex = re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", wordlist)
     # regex for validating an email format
-    for email in wordlist:
+    for email in emails:
         seen = set(allemails)
-        if email not in seen and re.fullmatch(regex, email):  # faster than `word not in output`
+        if email not in seen :  # faster than `word not in output`
             allemails.append(email)
             seen.add(email)
             email_file.write(email + "\n")  # appending Emails to a fileread
